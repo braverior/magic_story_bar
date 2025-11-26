@@ -1,0 +1,12 @@
+node_modules/
+dist/
+coverage/
+tmp/
+*.log
+.DS_Store
+.env
+.env.*
+.vscode/
+.idea/
+.cache/
+.eslintcache
