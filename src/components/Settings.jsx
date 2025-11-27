@@ -8,7 +8,7 @@ function Settings({ onClose }) {
   const [showKeys, setShowKeys] = useState({
     textApiKey: false,
     imageApiKey: false,
-    ttsApiKey: false
+    ttsAccessKey: false
   })
   const [saved, setSaved] = useState(false)
   
@@ -152,66 +152,63 @@ function Settings({ onClose }) {
             </div>
           </div>
           
-          {/* 语音合成配置 */}
+          {/* 语音合成配置 - 火山引擎TTS */}
           <div className="mb-6">
             <div className="flex items-center gap-2 mb-3">
               <Mic className="w-5 h-5 text-candy-purple" />
-              <h3 className="font-bold text-gray-700">🎤 语音朗读配置</h3>
+              <h3 className="font-bold text-gray-700">🎤 语音朗读配置（火山引擎TTS）</h3>
             </div>
             <div className="bg-candy-purple/10 rounded-2xl p-4 space-y-3">
               <div>
-                <label className="text-sm text-gray-600 mb-1 block">API Key</label>
+                <label className="text-sm text-gray-600 mb-1 block">App ID</label>
+                <input
+                  type="text"
+                  value={config.ttsAppId}
+                  onChange={(e) => handleChange('ttsAppId', e.target.value)}
+                  placeholder="输入火山引擎App ID"
+                  className="input-kid w-full"
+                />
+              </div>
+              <div>
+                <label className="text-sm text-gray-600 mb-1 block">Access Key</label>
                 <div className="relative">
                   <input
-                    type={showKeys.ttsApiKey ? 'text' : 'password'}
-                    value={config.ttsApiKey}
-                    onChange={(e) => handleChange('ttsApiKey', e.target.value)}
-                    placeholder="输入你的API Key"
+                    type={showKeys.ttsAccessKey ? 'text' : 'password'}
+                    value={config.ttsAccessKey}
+                    onChange={(e) => handleChange('ttsAccessKey', e.target.value)}
+                    placeholder="输入火山引擎Access Key"
                     className="input-kid w-full pr-10"
                   />
                   <button
-                    onClick={() => toggleShowKey('ttsApiKey')}
+                    onClick={() => toggleShowKey('ttsAccessKey')}
                     className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
                   >
-                    {showKeys.ttsApiKey ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                    {showKeys.ttsAccessKey ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                   </button>
                 </div>
               </div>
-              <div className="grid grid-cols-3 gap-3">
-                <div>
-                  <label className="text-sm text-gray-600 mb-1 block">API 地址</label>
-                  <input
-                    type="text"
-                    value={config.ttsApiUrl}
-                    onChange={(e) => handleChange('ttsApiUrl', e.target.value)}
-                    placeholder="https://api.newapi.pro/v1"
-                    className="input-kid w-full text-sm"
-                  />
-                </div>
-                <div>
-                  <label className="text-sm text-gray-600 mb-1 block">模型名称</label>
-                  <input
-                    type="text"
-                    value={config.ttsModel}
-                    onChange={(e) => handleChange('ttsModel', e.target.value)}
-                    placeholder="doubao-tts"
-                    className="input-kid w-full text-sm"
-                  />
-                </div>
-                <div>
-                  <label className="text-sm text-gray-600 mb-1 block">声音ID</label>
-                  <input
-                    type="text"
-                    value={config.ttsVoice}
-                    onChange={(e) => handleChange('ttsVoice', e.target.value)}
-                    placeholder="zh_female_qingxin"
-                    className="input-kid w-full text-sm"
-                  />
-                </div>
+              <div>
+                <label className="text-sm text-gray-600 mb-1 block">Resource ID（资源ID）</label>
+                <input
+                  type="text"
+                  value={config.ttsResourceId}
+                  onChange={(e) => handleChange('ttsResourceId', e.target.value)}
+                  placeholder="输入火山引擎Resource ID"
+                  className="input-kid w-full"
+                />
+              </div>
+              <div>
+                <label className="text-sm text-gray-600 mb-1 block">音色ID（speaker）</label>
+                <input
+                  type="text"
+                  value={config.ttsVoice}
+                  onChange={(e) => handleChange('ttsVoice', e.target.value)}
+                  placeholder="zh_female_cancan_mars_bigtts"
+                  className="input-kid w-full text-sm"
+                />
               </div>
               <p className="text-xs text-gray-400">
-                豆包TTS声音：zh_female_qingxin, zh_female_tianmei, zh_male_xiaoming | 
-                OpenAI TTS：alloy, echo, nova
+                推荐音色：zh_female_cancan_mars_bigtts（灿灿）、zh_female_wanwanxiaohe_moon_bigtts（小荷）、zh_male_chunhou_mars_bigtts（淳厚）
               </p>
             </div>
           </div>
@@ -222,7 +219,7 @@ function Settings({ onClose }) {
             <ul className="list-disc list-inside space-y-1 text-xs">
               <li>API接口兼容 OpenAI 格式，支持 NewAPI、OneAPI 等中转服务</li>
               <li>图片生成API Key可以和文本API Key相同（如果服务商支持）</li>
-              <li>语音朗读推荐使用豆包TTS，声音更适合儿童故事</li>
+              <li>语音朗读使用火山引擎大模型语音合成，音质清晰自然</li>
               <li>配置会自动保存在浏览器中，下次打开自动加载</li>
             </ul>
           </div>

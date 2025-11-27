@@ -27,6 +27,15 @@ export default defineConfig({
         target: 'https://api.imgbb.com',
         changeOrigin: true,
         rewrite: (path) => path.replace(/^\/imgbb-api/, '/1')
+      },
+      // 火山引擎TTS API代理 (V3单向流式)
+      '/volc-tts': {
+        target: 'https://openspeech.bytedance.com',
+        changeOrigin: true,
+        rewrite: (path) => path.replace(/^\/volc-tts/, '/api/v3/tts'),
+        headers: {
+          'Origin': 'https://openspeech.bytedance.com'
+        }
       }
     }
   }

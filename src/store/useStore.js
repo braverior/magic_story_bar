@@ -31,10 +31,11 @@ const useStore = create(
         imageApiUrl: 'https://api.newapi.pro/v1',
         imageModel: 'dall-e-3',
         imgbbApiKey: '', // 免费图床API Key
-        ttsApiKey: '',
-        ttsApiUrl: 'https://api.newapi.pro/v1',
-        ttsModel: 'doubao-tts',
-        ttsVoice: 'zh_female_qingxin',
+        // 火山引擎TTS配置
+        ttsAppId: '',
+        ttsAccessKey: '',
+        ttsResourceId: '',
+        ttsVoice: 'zh_female_cancan_mars_bigtts',
       },
       
       // 添加故事
