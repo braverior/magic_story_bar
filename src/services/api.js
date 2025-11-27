@@ -206,7 +206,8 @@ export async function textToSpeech(text, apiConfig) {
       'X-Api-Resource-Id': ttsResourceId || 'volc.service_type.10029',
       'Connection': 'keep-alive'
     },
-    body: JSON.stringify(requestBody)
+    body: JSON.stringify(requestBody),
+    signal: signal  // 支持取消请求
   })
   
   console.log('TTS响应状态:', response.status, response.headers.get('content-type'))
@@ -369,4 +370,121 @@ export async function generatePictureBook(prompt, apiConfig, onProgress) {
 export async function readPageAloud(text, apiConfig) {
   const audioUrl = await textToSpeech(text, apiConfig)
   return audioUrl
+}
+
+// 流式文字转语音（边接收边播放）
+export async function textToSpeechStream(text, apiConfig, onAudioChunk, signal) {
+  const { ttsAppId, ttsAccessKey, ttsResourceId, ttsVoice } = apiConfig
+  
+  if (!ttsAppId || !ttsAccessKey) {
+    throw new Error('请先配置火山引擎TTS的App ID和Access Key')
+  }
+  
+  const apiEndpoint = '/volc-tts/unidirectional'
+  console.log('流式语音合成API:', apiEndpoint, '音色:', ttsVoice)
+  
+  const requestBody = {
+    user: {
+      uid: 'magic_story_stream_' + Date.now()
+    },
+    req_params: {
+      text: text,
+      speaker: ttsVoice || 'zh_female_cancan_mars_bigtts',
+      audio_params: {
+        format: 'mp3',
+        sample_rate: 24000,
+        enable_timestamp: false
+      },
+      additions: JSON.stringify({
+        explicit_language: 'zh',
+        disable_markdown_filter: true
+      })
+    }
+  }
+  
+  const response = await fetch(apiEndpoint, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'X-Api-App-Id': ttsAppId,
+      'X-Api-Access-Key': ttsAccessKey,
+      'X-Api-Resource-Id': ttsResourceId || 'volc.service_type.10029',
+      'Connection': 'keep-alive'
+    },
+    body: JSON.stringify(requestBody)
+  })
+  
+  if (!response.ok) {
+    const errorText = await response.text()
+    console.error('TTS流式错误响应:', errorText)
+    throw new Error(`语音合成失败: ${response.status} - ${errorText}`)
+  }
+  
+  const reader = response.body.getReader()
+  const decoder = new TextDecoder()
+  let buffer = ''
+  let isCompleted = false
+  
+  try {
+    while (true) {
+      const { done, value } = await reader.read()
+      if (done) break
+      
+      buffer += decoder.decode(value, { stream: true })
+      
+      const lines = buffer.split('\n')
+      buffer = lines.pop() || ''
+      
+      for (const line of lines) {
+        if (!line.trim()) continue
+        
+        try {
+          const data = JSON.parse(line)
+          
+          if (data.code === 0 && data.data) {
+            const chunkAudio = base64ToUint8Array(data.data)
+            // 实时回调音频数据
+            await onAudioChunk?.(chunkAudio)
+            continue
+          }
+          
+          if (data.code === 20000000) {
+            console.log('TTS流式传输完成')
+            isCompleted = true
+            break
+          }
+          
+          if (data.code && data.code !== 0 && data.code !== 20000000) {
+            console.error('TTS流式错误:', data)
+            throw new Error(data.message || `TTS错误码: ${data.code}`)
+          }
+        } catch (parseError) {
+          if (parseError.message.includes('TTS错误码')) {
+            throw parseError
+          }
+          console.warn('JSON解析警告:', parseError.message)
+        }
+      }
+      
+      if (isCompleted) break
+    }
+    
+    // 处理buffer中剩余的数据
+    if (buffer.trim()) {
+      try {
+        const data = JSON.parse(buffer)
+        if (data.code === 0 && data.data) {
+          const chunkAudio = base64ToUint8Array(data.data)
+          await onAudioChunk?.(chunkAudio)
+        }
+      } catch (e) {
+        console.warn('最后一行解析失败:', e.message)
+      }
+    }
+    
+  } finally {
+    reader.releaseLock()
+  }
+  
+  return isCompleted
 }

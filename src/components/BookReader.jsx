@@ -1,15 +1,30 @@
-import React, { useState, useRef, useEffect } from 'react'
+import React, { useState, useRef, useEffect, useCallback } from 'react'
 import { ChevronLeft, ChevronRight, Play, Pause, Volume2, X, BookOpen, Maximize, Minimize } from 'lucide-react'
 import useStore from '../store/useStore'
-import { readPageAloud } from '../services/api'
+import { textToSpeechStream } from '../services/api'
+import { useStreamingAudio } from '../hooks/useStreamingAudio'
 
 function BookReader({ onClose }) {
-  const { currentStory, currentPage, nextPage, prevPage, apiConfig, isReading, setIsReading } = useStore()
-  const [audioUrl, setAudioUrl] = useState(null)
-  const [isLoadingAudio, setIsLoadingAudio] = useState(false)
+  const { currentStory, currentPage, nextPage, prevPage, apiConfig, isReading, setIsReading, setCurrentPage } = useStore()
   const [isFullscreen, setIsFullscreen] = useState(false)
-  const audioRef = useRef(null)
+  // 记录是否应该自动播放（当前页正在播放或播放完成后切换页面）
+  // 标记是否是自动翻页（播放完成后触发的翻页）
+  const [isAutoPageTurn, setIsAutoPageTurn] = useState(false)
   const containerRef = useRef(null)
+  const prevPageRef = useRef(currentPage)
+  
+  // 流式音频播放器
+  const {
+    isPlaying,
+    isLoading: isLoadingAudio,
+    isStreamComplete,
+    startStreaming,
+    pause: pauseAudio,
+    resume: resumeAudio,
+    stop: stopAudio,
+    cleanup: cleanupAudio,
+    onEnded
+  } = useStreamingAudio()
   
   const page = currentStory?.pages[currentPage]
   const totalPages = currentStory?.pages.length || 0
@@ -17,20 +32,61 @@ function BookReader({ onClose }) {
   // 清理音频
   useEffect(() => {
     return () => {
-      if (audioUrl) {
-        URL.revokeObjectURL(audioUrl)
-      }
+      cleanupAudio()
     }
-  }, [audioUrl])
+  }, [])
   
-  // 页面切换时停止播放
+  // 同步播放状态到store
   useEffect(() => {
-    if (audioRef.current) {
-      audioRef.current.pause()
+    setIsReading(isPlaying)
+  }, [isPlaying, setIsReading])
+  
+  // 音频播放结束时自动翻到下一页
+  useEffect(() => {
+    const unsubscribe = onEnded(() => {
+      // 播放结束后，如果不是最后一页，标记为自动翻页并翻到下一页
+      if (currentPage < totalPages - 1) {
+        setIsAutoPageTurn(true)
+        setTimeout(() => {
+          nextPage()
+        }, 500)
+      }
+    })
+    return unsubscribe
+  }, [onEnded, currentPage, totalPages, nextPage])
+  
+  // 页面切换时处理播放逻辑
+  useEffect(() => {
+    // 检测是否是真正的页面切换
+    if (prevPageRef.current !== currentPage) {
+      // 停止当前播放并清空缓存
+      stopAudio()
+      
+      // 只有在自动翻页（播放完成后触发）时才自动播放新页面
+      if (isAutoPageTurn) {
+        setIsAutoPageTurn(false)
+        // 延迟一点开始播放，确保页面内容已更新
+        // 直接获取当前页面文本，避免闭包问题
+        const currentPageData = currentStory?.pages[currentPage]
+        if (currentPageData?.text) {
+          setTimeout(async () => {
+            try {
+              await startStreaming(async (onChunk, signal) => {
+                await textToSpeechStream(currentPageData.text, apiConfig, onChunk, signal)
+              })
+            } catch (error) {
+              if (error.name !== 'AbortError') {
+                console.error('自动朗读失败:', error)
+              }
+            }
+          }, 300)
+        }
+      }
+      // 手动切换页面时不自动播放，只清空缓存（stopAudio已经完成）
+      
+      prevPageRef.current = currentPage
     }
-    setIsReading(false)
-    setAudioUrl(null)
-  }, [currentPage])
+  }, [currentPage, isAutoPageTurn, currentStory, apiConfig, startStreaming, stopAudio])
   
   // 监听全屏变化
   useEffect(() => {
@@ -63,52 +119,34 @@ function BookReader({ onClose }) {
     return () => window.removeEventListener('keydown', handleKeyDown)
   }, [currentPage, isReading, isFullscreen])
   
-  // 朗读当前页面
-  const handleReadAloud = async () => {
-    if (isReading) {
-      audioRef.current?.pause()
-      setIsReading(false)
+  // 朗读当前页面（流式播放）
+  const handleReadAloud = useCallback(async (forcePlay = false) => {
+    // 如果正在播放，暂停
+    if (isPlaying && !forcePlay) {
+      pauseAudio()
+      return
+    }
+    
+    // 如果已暂停且不是强制播放，继续播放
+    if (!isPlaying && !isLoadingAudio && !forcePlay && isStreamComplete) {
+      resumeAudio()
       return
     }
     
     if (!page?.text) return
     
-    // 如果已有音频，直接播放
-    if (audioUrl) {
-      audioRef.current?.play()
-      setIsReading(true)
-      return
-    }
-    
-    // 生成新的音频
-    setIsLoadingAudio(true)
+    // 开始流式播放
     try {
-      const url = await readPageAloud(page.text, apiConfig)
-      setAudioUrl(url)
-      setIsReading(true)
-      
-      // 等待音频元素加载完成后播放
-      setTimeout(() => {
-        audioRef.current?.play()
-      }, 100)
+      await startStreaming(async (onChunk, signal) => {
+        await textToSpeechStream(page.text, apiConfig, onChunk, signal)
+      })
     } catch (error) {
-      console.error('朗读失败:', error)
-      alert(error.message || '朗读失败，请检查语音API配置')
-    } finally {
-      setIsLoadingAudio(false)
+      if (error.name !== 'AbortError') {
+        console.error('朗读失败:', error)
+        alert(error.message || '朗读失败，请检查语音API配置')
+      }
     }
-  }
-  
-  // 音频播放结束
-  const handleAudioEnded = () => {
-    setIsReading(false)
-    // 自动翻到下一页
-    if (currentPage < totalPages - 1) {
-      setTimeout(() => {
-        nextPage()
-      }, 1000)
-    }
-  }
+  }, [page?.text, apiConfig, isPlaying, isLoadingAudio, isStreamComplete, startStreaming, pauseAudio, resumeAudio])
   
   // 切换全屏
   const toggleFullscreen = () => {
@@ -148,16 +186,7 @@ function BookReader({ onClose }) {
           : 'bg-black/80 p-4'
       }`}
     >
-      {/* 隐藏的音频元素 */}
-      {audioUrl && (
-        <audio 
-          ref={audioRef} 
-          src={audioUrl} 
-          onEnded={handleAudioEnded}
-          onPause={() => setIsReading(false)}
-          onPlay={() => setIsReading(true)}
-        />
-      )}
+
       
       {/* 全屏模式下的星空背景 */}
       {isFullscreen && (
