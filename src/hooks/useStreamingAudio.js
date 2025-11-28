@@ -191,7 +191,7 @@ export function useStreamingAudio() {
   
   // 继续播放
   const resume = useCallback(() => {
-    if (audioRef.current) {
+    if (audioRef.current && audioRef.current.src) {
       const playPromise = audioRef.current.play()
       if (playPromise) {
         playPromise.catch(e => console.warn('继续播放失败:', e))
@@ -226,10 +226,14 @@ export function useStreamingAudio() {
     // 停止并清理音频元素
     if (audioRef.current) {
       audioRef.current.pause()
-      if (audioRef.current.src) {
-        URL.revokeObjectURL(audioRef.current.src)
-        audioRef.current.src = ''
+      const currentSrc = audioRef.current.src
+      if (currentSrc) {
+        URL.revokeObjectURL(currentSrc)
       }
+      // 彻底清除src
+      audioRef.current.src = ''
+      audioRef.current.removeAttribute('src')
+      audioRef.current.load()
       audioRef.current.currentTime = 0
     }
     

@@ -23,7 +23,8 @@ function BookReader({ onClose }) {
     resume: resumeAudio,
     stop: stopAudio,
     cleanup: cleanupAudio,
-    onEnded
+    onEnded,
+    audioElement
   } = useStreamingAudio()
   
   const page = currentStory?.pages[currentPage]
@@ -128,7 +129,8 @@ function BookReader({ onClose }) {
     }
     
     // 如果已暂停且不是强制播放，继续播放
-    if (!isPlaying && !isLoadingAudio && !forcePlay && isStreamComplete) {
+    // 只要有音频源就恢复播放，不需要等待流完全结束
+    if (!isPlaying && !isLoadingAudio && !forcePlay && (isStreamComplete || (audioElement && audioElement.src))) {
       resumeAudio()
       return
     }
@@ -144,9 +146,9 @@ function BookReader({ onClose }) {
       if (error.name !== 'AbortError') {
         console.error('朗读失败:', error)
         alert(error.message || '朗读失败，请检查语音API配置')
-      }
+      } // catch
     }
-  }, [page?.text, apiConfig, isPlaying, isLoadingAudio, isStreamComplete, startStreaming, pauseAudio, resumeAudio])
+  }, [page?.text, apiConfig, isPlaying, isLoadingAudio, isStreamComplete, startStreaming, pauseAudio, resumeAudio, audioElement])
   
   // 切换全屏
   const toggleFullscreen = () => {
@@ -218,7 +220,7 @@ function BookReader({ onClose }) {
           <div className="flex items-center gap-3">
             {/* 朗读按钮 */}
             <button
-              onClick={handleReadAloud}
+              onClick={() => handleReadAloud()}
               disabled={isLoadingAudio}
               className={`flex items-center gap-2 px-4 py-2 rounded-full transition-all ${
                 isReading 
