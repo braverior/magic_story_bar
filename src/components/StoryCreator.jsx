@@ -195,7 +195,7 @@ function StoryCreator({ onClose, onOpenSettings }) {
   }
   
   return (
-    <div className="flex-1 flex flex-col items-center justify-center p-8 bubble-bg">
+    <div className="flex-1 flex flex-col items-center justify-center p-8">
       <div className="w-full max-w-2xl">
         {/* 标题 */}
         <div className="text-center mb-8">

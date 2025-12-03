@@ -25,7 +25,7 @@ function StoryView({ onRead }) {
   }
   
   return (
-    <div className="flex-1 overflow-y-auto p-6 bubble-bg">
+    <div className="flex-1 overflow-y-auto p-6">
       <div className="max-w-4xl mx-auto">
         {/* 封面区域 */}
         <div className="card-kid p-8 mb-6">

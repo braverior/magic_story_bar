@@ -11,13 +11,13 @@
   --candy-orange: #FFDAB9;
 }
 
-/* 字体定义 */
+/* 字体定义 - 默认使用卡通字体 */
 .font-default {
-  font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif !important;
+  font-family: 'ZCOOL KuaiLe', 'Comic Sans MS', 'Chalkboard SE', 'YouYuan', 'HanziPen SC', cursive, system-ui, -apple-system, sans-serif !important;
 }
 
 .font-serif {
-  font-family: 'Times New Roman', 'Songti SC', 'SimSun', serif !important;
+  font-family: 'ZCOOL KuaiLe', 'Comic Sans MS', 'Chalkboard SE', 'YouYuan', 'HanziPen SC', cursive !important;
 }
 
 .font-comic {
@@ -25,7 +25,7 @@
 }
 
 .font-round {
-  font-family: 'Arial Rounded MT Bold', 'Varela Round', 'Yuanti SC', sans-serif !important;
+  font-family: 'ZCOOL KuaiLe', 'Comic Sans MS', 'Chalkboard SE', 'YouYuan', 'HanziPen SC', cursive !important;
 }
 
 * {
@@ -34,8 +34,12 @@
   box-sizing: border-box;
 }
 
-body {
+/* 强制所有文本使用卡通字体 */
+body, button, input, textarea, select, h1, h2, h3, h4, h5, h6, p, span, div, a {
   font-family: 'ZCOOL KuaiLe', 'Comic Sans MS', 'Chalkboard SE', 'YouYuan', 'HanziPen SC', cursive;
+}
+
+body {
   background: linear-gradient(135deg, #FFF5F5 0%, #F0F8FF 50%, #F5FFFA 100%);
   min-height: 100vh;
   overflow-x: hidden;
@@ -164,7 +168,7 @@ body {
 /* 气泡背景 */
 .bubble-bg {
   position: relative;
-  overflow: hidden;
+  background: linear-gradient(180deg, #FFFFFF 0%, #FFF0F5 100%);
 }
 
 .bubble-bg::before {
@@ -173,10 +177,58 @@ body {
   width: 100%;
   height: 100%;
   background-image: 
-    radial-gradient(circle at 10% 20%, rgba(255, 182, 193, 0.3) 0%, transparent 20%),
-    radial-gradient(circle at 90% 80%, rgba(135, 206, 235, 0.3) 0%, transparent 20%),
-    radial-gradient(circle at 50% 50%, rgba(152, 251, 152, 0.2) 0%, transparent 30%);
+    radial-gradient(circle at 15% 15%, rgba(255, 182, 193, 0.4) 0%, transparent 25%),
+    radial-gradient(circle at 85% 85%, rgba(135, 206, 235, 0.4) 0%, transparent 25%),
+    radial-gradient(circle at 50% 50%, rgba(255, 228, 225, 0.3) 0%, transparent 40%),
+    radial-gradient(circle at 80% 20%, rgba(221, 160, 221, 0.3) 0%, transparent 20%),
+    radial-gradient(circle at 20% 80%, rgba(152, 251, 152, 0.2) 0%, transparent 20%);
   pointer-events: none;
+  animation: pulse-soft 8s ease-in-out infinite;
+}
+
+/* 魔法书样式 */
+.magic-book-cover {
+  background: linear-gradient(135deg, #6366f1 0%, #a855f7 50%, #ec4899 100%);
+  border-radius: 20px;
+  box-shadow: 
+    0 20px 40px rgba(0,0,0,0.15),
+    inset 0 0 20px rgba(255,255,255,0.2);
+  position: relative;
+  transform-style: preserve-3d;
+  transition: transform 0.5s ease;
+}
+
+.magic-book-cover:hover {
+  transform: translateY(-10px) rotateX(5deg);
+}
+
+.magic-book-spine {
+  position: absolute;
+  left: 20px;
+  top: 0;
+  bottom: 0;
+  width: 4px;
+  background: rgba(255,255,255,0.2);
+  border-radius: 2px;
+}
+
+/* 漂浮动画 */
+@keyframes float {
+  0% { transform: translateY(0px) rotate(0deg); }
+  50% { transform: translateY(-15px) rotate(5deg); }
+  100% { transform: translateY(0px) rotate(0deg); }
+}
+
+.animate-float {
+  animation: float 4s ease-in-out infinite;
+}
+
+.animate-float-delay-1 {
+  animation: float 4s ease-in-out 1s infinite;
+}
+
+.animate-float-delay-2 {
+  animation: float 4s ease-in-out 2s infinite;
 }
 
 /* 卡片样式 */

@@ -1,8 +1,8 @@
 import React from 'react'
-import { Book, Trash2, Plus, Sparkles } from 'lucide-react'
+import { Book, Trash2, Plus, Sparkles, X } from 'lucide-react'
 import useStore from '../store/useStore'
 
-function Sidebar({ onNewStory }) {
+function Sidebar({ onNewStory, isOpen, onClose }) {
   const { stories, currentStory, selectStory, deleteStory } = useStore()
   
   const formatDate = (dateString) => {
@@ -16,11 +16,33 @@ function Sidebar({ onNewStory }) {
   }
   
   return (
-    <div className="w-72 h-full bg-white/80 backdrop-blur-sm border-r-4 border-candy-pink flex flex-col">
-      {/* 头部 */}
-      <div className="p-4 border-b-2 border-candy-pink/30">
+    <>
+      {/* 移动端遮罩层 */}
+      {isOpen && (
+        <div 
+          className="fixed inset-0 bg-black/20 backdrop-blur-sm z-40 md:hidden"
+          onClick={onClose}
+        />
+      )}
+
+      <div className={`
+        fixed inset-y-0 left-0 z-50 w-72 h-full bg-white/95 backdrop-blur-md border-r border-gray-200 shadow-xl transform transition-transform duration-300 ease-in-out
+        md:relative md:translate-x-0 md:bg-white/80 md:shadow-sm md:z-0
+        ${isOpen ? 'translate-x-0' : '-translate-x-full'}
+        flex flex-col
+      `}>
+        {/* 移动端关闭按钮 */}
+        <button 
+          onClick={onClose}
+          className="absolute top-2 right-2 p-2 rounded-full hover:bg-gray-100 md:hidden z-10"
+        >
+          <X className="w-5 h-5 text-gray-500" />
+        </button>
+
+        {/* 头部 */}
+      <div className="p-4 border-b border-gray-100">
         <div className="flex items-center gap-3 mb-4">
-          <div className="w-12 h-12 rounded-full bg-gradient-to-br from-candy-pink to-candy-purple flex items-center justify-center animate-bounce-gentle">
+          <div className="w-12 h-12 rounded-full bg-gradient-to-br from-purple-400 to-pink-400 flex items-center justify-center animate-bounce-gentle">
             <Sparkles className="w-6 h-6 text-white" />
           </div>
           <div>
@@ -118,7 +140,7 @@ function Sidebar({ onNewStory }) {
       </div>
       
       {/* 底部装饰 */}
-      <div className="p-4 border-t-2 border-candy-pink/30">
+      <div className="p-4 border-t border-gray-100">
         <div className="flex justify-center gap-2 text-2xl">
           <span className="animate-bounce" style={{ animationDelay: '0s' }}>🌈</span>
           <span className="animate-bounce" style={{ animationDelay: '0.1s' }}>⭐</span>
@@ -127,7 +149,8 @@ function Sidebar({ onNewStory }) {
           <span className="animate-bounce" style={{ animationDelay: '0.4s' }}>🎨</span>
         </div>
       </div>
-    </div>
+      </div>
+    </>
   )
 }
 

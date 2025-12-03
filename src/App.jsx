@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react'
-import { Settings as SettingsIcon } from 'lucide-react'
+import { Settings as SettingsIcon, Menu } from 'lucide-react'
 import useStore from './store/useStore'
 import Sidebar from './components/Sidebar'
 import Settings from './components/Settings'
@@ -12,6 +12,7 @@ function App() {
   const { currentStory, isSettingsOpen, toggleSettings, apiConfig } = useStore()
   const [view, setView] = useState('welcome') // welcome, create, story
   const [isReading, setIsReading] = useState(false)
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false) // 控制侧边栏在移动端的显示
   
   // 当选中故事时，切换到故事视图
   useEffect(() => {
@@ -85,13 +86,28 @@ function App() {
   return (
     <div className={`h-screen flex overflow-hidden font-${apiConfig.fontFamily || 'default'}`}>
       {/* 侧边栏 */}
-      <Sidebar onNewStory={handleNewStory} />
+      <Sidebar 
+        onNewStory={() => {
+          handleNewStory()
+          setIsSidebarOpen(false)
+        }}
+        isOpen={isSidebarOpen}
+        onClose={() => setIsSidebarOpen(false)}
+      />
       
       {/* 主内容区 */}
-      <div className="flex-1 flex flex-col overflow-hidden">
+      <div className="flex-1 flex flex-col overflow-hidden bubble-bg">
         {/* 顶部工具栏 */}
         <div className="h-14 bg-white/50 backdrop-blur-sm border-b-2 border-candy-pink/20 flex items-center justify-between px-4">
           <div className="flex items-center gap-2">
+            {/* 移动端菜单按钮 */}
+            <button
+              onClick={() => setIsSidebarOpen(true)}
+              className="md:hidden w-10 h-10 -ml-2 rounded-full hover:bg-gray-100 flex items-center justify-center"
+            >
+              <Menu className="w-5 h-5 text-gray-600" />
+            </button>
+
             {currentStory && view === 'story' && (
               <span className="text-gray-600">
                 📖 {currentStory.title}
