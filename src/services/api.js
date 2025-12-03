@@ -209,7 +209,7 @@ export async function textToSpeech(text, apiConfig) {
     },
     req_params: {
       text: text,
-      speaker: ttsVoice || 'zh_female_cancan_mars_bigtts',
+      speaker: ttsVoice || 'zh_female_xueayi_saturn_bigtts',
       audio_params: {
         format: 'mp3',
         sample_rate: 24000,
@@ -416,7 +416,7 @@ export async function textToSpeechStream(text, apiConfig, onAudioChunk, signal) 
     },
     req_params: {
       text: text,
-      speaker: ttsVoice || 'zh_female_cancan_mars_bigtts',
+      speaker: ttsVoice || 'zh_female_xueayi_saturn_bigtts',
       audio_params: {
         format: 'mp3',
         sample_rate: 24000,

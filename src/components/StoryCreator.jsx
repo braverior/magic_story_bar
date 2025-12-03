@@ -1,7 +1,110 @@
-import React, { useState } from 'react'
-import { Wand2, Sparkles, AlertCircle } from 'lucide-react'
+import React, { useState, useMemo, useEffect, useRef } from 'react'
+import { Wand2, Sparkles, AlertCircle, RotateCcw } from 'lucide-react'
 import useStore from '../store/useStore'
 import { generatePictureBook } from '../services/api'
+
+const ALL_STORY_IDEAS = [
+  '🐰 一只勇敢的小兔子',
+  '🦋 会飞的花朵',
+  '🌈 彩虹桥上的冒险',
+  '🐻 小熊找朋友',
+  '🌟 星星的愿望',
+  '🐠 海底的宝藏',
+  '🦄 独角兽的秘密',
+  '🍎 会说话的苹果树',
+  '🚀 遨游太空的猫咪',
+  '🦕 迷路的恐龙宝宝',
+  '🏰 糖果城堡的派对',
+  '🧜‍♀️ 人鱼公主的歌声',
+  '🧚‍♂️ 森林里的精灵舞会',
+  '🎪 动物园里的魔法师',
+  '🚂 开往云端的火车',
+  '🪁 风筝带我去旅行',
+  '🤖 想要心跳的机器人',
+  '🦊 聪明的狐狸侦探',
+  '🦉 戴眼镜的猫头鹰博士',
+  '🐼 功夫熊猫的学徒',
+  '🦁 狮子王的温柔时刻',
+  '🐘 大象的喷水节',
+  '🦒 长颈鹿的围巾',
+  '🐧 企鹅的滑冰比赛',
+  '🐬 海豚的音乐会',
+  '🐋 蓝鲸的深海故事',
+  '🐙 章鱼八爪的厨艺大赛',
+  '🐢 乌龟爷爷的慢时光',
+  '🐿️ 松鼠的橡果银行',
+  '🦔 刺猬的拥抱',
+  '🦢 天鹅湖的芭蕾舞',
+  '🦜 鹦鹉学舌闹笑话',
+  '🦩 火烈鸟的单腿站立挑战',
+  '🦓 斑马的条纹去哪了',
+  '🦘 袋鼠妈妈的口袋',
+  '🐊 鳄鱼医生的牙科诊所',
+  '🦈 鲨鱼宝宝不想刷牙',
+  '🐌 蜗牛的赛车梦',
+  '🐛 毛毛虫的变身日记',
+  '🐝 勤劳小蜜蜂的一天',
+  '🐞 瓢虫的点点不见了',
+  '🦗 蟋蟀的小提琴独奏',
+  '🕷️ 蜘蛛侠的织网课',
+  '🦂 蝎子的沙漠探险',
+  '🦟 蚊子的飞行特训',
+  '🦠 细菌王国的秘密',
+  '🍄 蘑菇屋的小矮人',
+  '🌵 仙人掌的拥抱',
+  '🌴 椰子树下的午睡',
+  '🌲 圣诞树的愿望',
+  '🍁 一片落叶的旅行',
+  '🌻 向日葵的微笑',
+  '🌹 玫瑰花的刺',
+  '🌷 郁金香的花园',
+  '🌼 雏菊的小秘密',
+  '🌙 月亮上的捣药兔',
+  '☀️ 太阳公公的墨镜',
+  '☁️ 云朵变成棉花糖',
+  '⛈️ 雷公公的架子鼓',
+  '❄️ 雪花的舞蹈',
+  '💧 小水滴的大海之旅',
+  '🔥 小火苗的冒险',
+  '💨 风儿的恶作剧',
+  '⛰️ 大山的沉默',
+  '🌋 火山的脾气',
+  '🌊 海浪的摇篮曲',
+  '🏝️ 荒岛求生记',
+  '🏙️ 城市里的流浪猫',
+  '🏡 老房子的回忆',
+  '🎠 旋转木马的梦',
+  '🎡 摩天轮的最高点',
+  '🎢 过山车的尖叫',
+  '🧸 玩具熊的午夜派对',
+  '🧩 拼图少了一块',
+  '🎨 画笔的魔法',
+  '🎹 钢琴键的争吵',
+  '🥁 鼓手的节奏',
+  '🎺 小号的起床号',
+  '🎻 大提琴的忧伤',
+  '🎸 吉他的摇滚梦',
+  '🎤 麦克风的舞台',
+  '🎧 耳机的悄悄话',
+  '📚 书本里的世界',
+  '✏️ 铅笔和橡皮擦',
+  '🎒 书包里的秘密',
+  '👟 跑鞋的马拉松',
+  '👓 眼镜的模糊世界',
+  '🕰️ 老钟表的嘀嗒声',
+  '🕯️ 蜡烛的最后光芒',
+  '💡 灯泡的灵感',
+  '🎁 神秘的礼物盒',
+  '🎈 气球飞向天空',
+  '🎀 蝴蝶结的装饰',
+  '🎊 节日的烟花',
+  '🎉 派对的惊喜',
+  '🧹 扫帚的飞行课',
+  '🔮 水晶球的预言',
+  '🧙‍♀️ 女巫的魔药锅',
+  '🧛‍♂️ 吸血鬼的素食日记',
+  '🧟‍♂️ 僵尸的舞蹈比赛',
+]
 
 function StoryCreator({ onClose, onOpenSettings }) {
   const { apiConfig, updateApiConfig, addStory, setIsGenerating, isGenerating } = useStore()
@@ -9,16 +112,40 @@ function StoryCreator({ onClose, onOpenSettings }) {
   const [progress, setProgress] = useState({ message: '', percent: 0 })
   const [error, setError] = useState('')
   
-  const storyIdeas = [
-    '🐰 一只勇敢的小兔子',
-    '🦋 会飞的花朵',
-    '🌈 彩虹桥上的冒险',
-    '🐻 小熊找朋友',
-    '🌟 星星的愿望',
-    '🐠 海底的宝藏',
-    '🦄 独角兽的秘密',
-    '🍎 会说话的苹果树',
-  ]
+  const [storyIdeas, setStoryIdeas] = useState([])
+  const [isVisible, setIsVisible] = useState(true)
+  const timerRef = useRef(null)
+
+  const getRandomIdeas = () => {
+    const shuffled = [...ALL_STORY_IDEAS].sort(() => 0.5 - Math.random())
+    return shuffled.slice(0, 8)
+  }
+
+  const refreshIdeas = () => {
+    setIsVisible(false)
+    setTimeout(() => {
+      setStoryIdeas(getRandomIdeas())
+      setIsVisible(true)
+    }, 500)
+  }
+
+  const handleManualRefresh = () => {
+    if (timerRef.current) clearInterval(timerRef.current)
+    refreshIdeas()
+    timerRef.current = setInterval(refreshIdeas, 10000)
+  }
+
+  useEffect(() => {
+    // 初始化
+    setStoryIdeas(getRandomIdeas())
+
+    // 定时切换
+    timerRef.current = setInterval(refreshIdeas, 10000)
+
+    return () => {
+      if (timerRef.current) clearInterval(timerRef.current)
+    }
+  }, [])
   
   const handleGenerate = async () => {
     if (!prompt.trim()) {
@@ -104,9 +231,19 @@ function StoryCreator({ onClose, onOpenSettings }) {
           
           {/* 快速选择 */}
           <div className="mt-4">
-            <p className="text-sm text-gray-500 mb-2">💡 或者试试这些有趣的主题：</p>
-            <div className="flex flex-wrap gap-2">
-              {storyIdeas.map((idea, index) => (
+            <div className="flex justify-between items-center mb-2">
+              <p className="text-sm text-gray-500">💡 或者试试这些有趣的主题：</p>
+              <button
+                onClick={handleManualRefresh}
+                className="flex items-center gap-1 text-xs text-candy-purple hover:text-candy-blue transition-colors"
+                title="换一批"
+              >
+                <RotateCcw className="w-3 h-3" />
+                <span>换一批</span>
+              </button>
+            </div>
+            <div className={`flex flex-wrap gap-2 transition-all duration-500 ${isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'}`}>
+               {storyIdeas.map((idea, index) => (
                 <button
                   key={index}
                   onClick={() => setPrompt(idea.slice(2))}
@@ -182,16 +319,7 @@ function StoryCreator({ onClose, onOpenSettings }) {
           </button>
         </div>
         
-        {/* 底部装饰 */}
-        <div className="mt-12 text-center">
-          <div className="inline-flex gap-4 text-4xl">
-            <span className="animate-float" style={{ animationDelay: '0s' }}>🌙</span>
-            <span className="animate-float" style={{ animationDelay: '0.2s' }}>⭐</span>
-            <span className="animate-float" style={{ animationDelay: '0.4s' }}>🦋</span>
-            <span className="animate-float" style={{ animationDelay: '0.6s' }}>🌸</span>
-            <span className="animate-float" style={{ animationDelay: '0.8s' }}>🌈</span>
-          </div>
-        </div>
+
       </div>
     </div>
   )

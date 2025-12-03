@@ -1,5 +1,5 @@
 import React, { useState } from 'react'
-import { X, Key, Mic, Image, MessageSquare, Save, Eye, EyeOff, Type } from 'lucide-react'
+import { X, Key, Mic, Image, MessageSquare, Save, Eye, EyeOff, Type, Download, Upload, FileJson, Trash2 } from 'lucide-react'
 import useStore from '../store/useStore'
 
 function Settings({ onClose }) {
@@ -25,6 +25,73 @@ function Settings({ onClose }) {
   const toggleShowKey = (field) => {
     setShowKeys(prev => ({ ...prev, [field]: !prev[field] }))
   }
+
+  const handleExport = () => {
+    const dataStr = JSON.stringify(config, null, 2)
+    const blob = new Blob([dataStr], { type: 'application/json' })
+    const url = URL.createObjectURL(blob)
+    const a = document.createElement('a')
+    a.href = url
+    a.download = 'magic-story-config.json'
+    document.body.appendChild(a)
+    a.click()
+    document.body.removeChild(a)
+    URL.revokeObjectURL(url)
+  }
+
+  const handleImport = (e) => {
+    const file = e.target.files[0]
+    if (!file) return
+
+    const reader = new FileReader()
+    reader.onload = (event) => {
+      try {
+        const importedConfig = JSON.parse(event.target.result)
+        // 简单的验证
+        if (typeof importedConfig === 'object') {
+          setConfig(prev => ({
+            ...prev,
+            ...importedConfig
+          }))
+          alert('配置导入成功！请点击保存按钮以应用更改。')
+        } else {
+          throw new Error('无效的配置文件')
+        }
+      } catch (err) {
+        alert('导入失败：文件格式不正确')
+      }
+    }
+    reader.readAsText(file)
+  }
+
+  const handleClearConfig = () => {
+    if (window.confirm('确定要清空所有配置吗？此操作不可恢复！')) {
+      const emptyConfig = {
+        // 文本生成配置
+        textApiKey: '',
+        textApiUrl: 'https://api.newapi.pro/v1',
+        textModel: 'gpt-4o-mini',
+        
+        // 图片生成配置
+        imageApiKey: '',
+        imageApiUrl: 'https://api.newapi.pro/v1',
+        imageModel: 'dall-e-3',
+        
+        // 语音合成配置
+        ttsAppId: '',
+        ttsAccessKey: '',
+        ttsResourceId: '',
+        ttsVoice: 'zh_female_xueayi_saturn_bigtts',
+        
+        // 外观配置
+        fontFamily: 'default'
+      }
+      setConfig(emptyConfig)
+      updateApiConfig(emptyConfig)
+      alert('配置已清空')
+    }
+  }
+
   
   return (
     <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
@@ -240,16 +307,50 @@ function Settings({ onClose }) {
                   type="text"
                   value={config.ttsVoice}
                   onChange={(e) => handleChange('ttsVoice', e.target.value)}
-                  placeholder="zh_female_cancan_mars_bigtts"
+                  placeholder="zh_female_xueayi_saturn_bigtts"
                   className="input-kid w-full text-sm"
                 />
               </div>
               <p className="text-xs text-gray-400">
-                推荐音色：zh_female_cancan_mars_bigtts（灿灿）、zh_female_wanwanxiaohe_moon_bigtts（小荷）、zh_male_chunhou_mars_bigtts（淳厚）
+                推荐音色：zh_female_xueayi_saturn_bigtts（故事）、zh_female_wanwanxiaohe_moon_bigtts（小荷）、zh_male_chunhou_mars_bigtts（淳厚）
               </p>
             </div>
           </div>
           
+          {/* 配置管理 */}
+          <div className="mb-6">
+            <div className="flex items-center gap-2 mb-3">
+              <FileJson className="w-5 h-5 text-gray-600" />
+              <h3 className="font-bold text-gray-700">⚙️ 配置管理</h3>
+            </div>
+            <div className="bg-gray-100 rounded-2xl p-4 flex gap-4">
+              <button
+                onClick={handleExport}
+                className="flex-1 flex items-center justify-center gap-2 bg-white border-2 border-gray-300 hover:border-candy-blue hover:text-candy-blue text-gray-600 py-2 rounded-xl transition-all"
+              >
+                <Download className="w-4 h-4" />
+                导出配置
+              </button>
+              <label className="flex-1 flex items-center justify-center gap-2 bg-white border-2 border-gray-300 hover:border-candy-green hover:text-candy-green text-gray-600 py-2 rounded-xl transition-all cursor-pointer">
+                <Upload className="w-4 h-4" />
+                导入配置
+                <input 
+                  type="file" 
+                  accept=".json" 
+                  onChange={handleImport} 
+                  className="hidden" 
+                />
+              </label>
+              <button
+                onClick={handleClearConfig}
+                className="flex-1 flex items-center justify-center gap-2 bg-white border-2 border-gray-300 hover:border-red-500 hover:text-red-500 text-gray-600 py-2 rounded-xl transition-all"
+              >
+                <Trash2 className="w-4 h-4" />
+                清空配置
+              </button>
+            </div>
+          </div>
+
           {/* 提示信息 */}
           <div className="bg-candy-yellow/30 rounded-2xl p-4 text-sm text-gray-600">
             <p className="font-bold mb-2">💡 小提示：</p>

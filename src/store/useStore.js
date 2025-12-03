@@ -35,7 +35,7 @@ const useStore = create(
         ttsAppId: '',
         ttsAccessKey: '',
         ttsResourceId: '',
-        ttsVoice: 'zh_female_cancan_mars_bigtts',
+        ttsVoice: 'zh_female_xueayi_saturn_bigtts',
         storyLanguage: 'zh', // 'zh' | 'en'
         fontFamily: 'default', // 'default' | 'serif' | 'comic' | 'round'
       },
