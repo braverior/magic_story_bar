@@ -164,6 +164,13 @@ function StoryCreator({ onClose, onOpenSettings }) {
     
     setError('')
     setIsGenerating(true)
+
+    // 阻止刷新
+    window.onbeforeunload = (e) => {
+      e.preventDefault()
+      e.returnValue = ''
+      return ''
+    }
     
     try {
       const story = await generatePictureBook(
@@ -180,6 +187,8 @@ function StoryCreator({ onClose, onOpenSettings }) {
       console.error('生成故事失败:', error)
       setError(error.message || '生成故事时出错了，请稍后重试')
     } finally {
+      // 恢复刷新
+      window.onbeforeunload = null
       setIsGenerating(false)
       setProgress({ message: '', percent: 0 })
     }
