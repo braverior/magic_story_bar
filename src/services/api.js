@@ -16,13 +16,35 @@ function getProxyUrl(apiUrl, endpoint) {
 
 // 生成故事文本
 export async function generateStoryText(prompt, apiConfig) {
-  const { textApiKey, textApiUrl, textModel } = apiConfig
+  const { textApiKey, textApiUrl, textModel, storyLanguage } = apiConfig
   
   if (!textApiKey) {
     throw new Error('请先配置文本生成API Key')
   }
   
-  const systemPrompt = `你是一个专业的儿童绘本作家，擅长创作适合3-8岁儿童的温馨故事。
+  const isEnglish = storyLanguage === 'en'
+
+  const systemPrompt = isEnglish 
+    ? `You are a professional children's picture book author, specializing in creating warm stories suitable for children aged 3-8.
+Please create a picture book story based on the user's theme, with the following requirements:
+1. The story must have a clear beginning, development, and a happy ending
+2. The language should be simple and easy to understand, suitable for children
+3. The content should be positive and uplifting
+4. The story should be divided into 5-8 pages, with about 40-80 words per page
+5. Each page's content should be visualizable for illustration purposes
+6. Do not include newline characters \\n in the text, use complete sentences
+
+Please return in JSON format as follows:
+{
+  "title": "Story Title",
+  "pages": [
+    {
+      "text": "Content of the first page",
+      "imagePrompt": "English description for generating the illustration. Requirements: children's picture book style, cute and warm, bright colors"
+    }
+  ]
+}`
+    : `你是一个专业的儿童绘本作家，擅长创作适合3-8岁儿童的温馨故事。
 请根据用户的主题创作一个绘本故事，要求：
 1. 故事要有明确的开始、发展和美好的结局
 2. 语言简单易懂，适合儿童阅读
@@ -55,7 +77,12 @@ export async function generateStoryText(prompt, apiConfig) {
       model: textModel,
       messages: [
         { role: 'system', content: systemPrompt },
-        { role: 'user', content: `请创作一个关于"${prompt}"的儿童绘本故事` }
+        { 
+          role: 'user', 
+          content: isEnglish 
+            ? `Please create a children's picture book story about "${prompt}". Please ensure the story is written in English.` 
+            : `请创作一个关于"${prompt}"的儿童绘本故事` 
+        }
       ],
       temperature: 0.8,
       response_format: { type: "json_object" }
@@ -165,7 +192,7 @@ export async function generateImage(prompt, apiConfig, storyId = null, pageIndex
 
 // 文字转语音（火山引擎TTS V3单向流式）
 export async function textToSpeech(text, apiConfig) {
-  const { ttsAppId, ttsAccessKey, ttsResourceId, ttsVoice } = apiConfig
+  const { ttsAppId, ttsAccessKey, ttsResourceId, ttsVoice, storyLanguage } = apiConfig
   
   if (!ttsAppId || !ttsAccessKey) {
     throw new Error('请先配置火山引擎TTS的App ID和Access Key')
@@ -189,7 +216,7 @@ export async function textToSpeech(text, apiConfig) {
         enable_timestamp: false
       },
       additions: JSON.stringify({
-        explicit_language: 'zh',
+        explicit_language: storyLanguage === 'en' ? 'en' : 'zh',
         disable_markdown_filter: true
       })
     }
@@ -374,7 +401,7 @@ export async function readPageAloud(text, apiConfig) {
 
 // 流式文字转语音（边接收边播放）
 export async function textToSpeechStream(text, apiConfig, onAudioChunk, signal) {
-  const { ttsAppId, ttsAccessKey, ttsResourceId, ttsVoice } = apiConfig
+  const { ttsAppId, ttsAccessKey, ttsResourceId, ttsVoice, storyLanguage } = apiConfig
   
   if (!ttsAppId || !ttsAccessKey) {
     throw new Error('请先配置火山引擎TTS的App ID和Access Key')

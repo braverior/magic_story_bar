@@ -1,5 +1,5 @@
 import React, { useState } from 'react'
-import { X, Key, Mic, Image, MessageSquare, Save, Eye, EyeOff } from 'lucide-react'
+import { X, Key, Mic, Image, MessageSquare, Save, Eye, EyeOff, Type } from 'lucide-react'
 import useStore from '../store/useStore'
 
 function Settings({ onClose }) {
@@ -50,6 +50,43 @@ function Settings({ onClose }) {
         
         {/* 内容 */}
         <div className="p-6 overflow-y-auto max-h-[calc(90vh-180px)]">
+          {/* 外观配置 */}
+          <div className="mb-6">
+            <div className="flex items-center gap-2 mb-3">
+              <Type className="w-5 h-5 text-candy-purple" />
+              <h3 className="font-bold text-gray-700">🎨 外观设置</h3>
+            </div>
+            <div className="bg-candy-purple/10 rounded-2xl p-4">
+              <label className="text-sm text-gray-600 mb-2 block">阅读字体</label>
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+                {[ 
+                  { id: 'default', name: '默认', class: 'font-default' },
+                  { id: 'serif', name: '书本', class: 'font-serif' },
+                  { id: 'comic', name: '卡通', class: 'font-comic' },
+                  { id: 'round', name: '圆润', class: 'font-round' }
+                ].map(font => (
+                  <button
+                    key={font.id}
+                    onClick={() => {
+                      handleChange('fontFamily', font.id)
+                      updateApiConfig({ ...config, fontFamily: font.id })
+                    }}
+                    className={`
+                      px-3 py-2 rounded-xl text-sm transition-all border-2
+                      ${config.fontFamily === font.id 
+                        ? 'border-candy-purple bg-white text-candy-purple shadow-md' 
+                        : 'border-transparent hover:bg-white/50 text-gray-600'}
+                      ${font.class}
+                    `}
+                  >
+                    {font.name}
+                    <div className="text-xs opacity-60">Abc</div>
+                  </button>
+                ))}
+              </div>
+            </div>
+          </div>
+
           {/* 文本生成配置 */}
           <div className="mb-6">
             <div className="flex items-center gap-2 mb-3">

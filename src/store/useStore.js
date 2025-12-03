@@ -36,6 +36,8 @@ const useStore = create(
         ttsAccessKey: '',
         ttsResourceId: '',
         ttsVoice: 'zh_female_cancan_mars_bigtts',
+        storyLanguage: 'zh', // 'zh' | 'en'
+        fontFamily: 'default', // 'default' | 'serif' | 'comic' | 'round'
       },
       
       // 添加故事

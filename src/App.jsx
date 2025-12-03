@@ -9,7 +9,7 @@ import StoryView from './components/StoryView'
 import WelcomeScreen from './components/WelcomeScreen'
 
 function App() {
-  const { currentStory, isSettingsOpen, toggleSettings } = useStore()
+  const { currentStory, isSettingsOpen, toggleSettings, apiConfig } = useStore()
   const [view, setView] = useState('welcome') // welcome, create, story
   const [isReading, setIsReading] = useState(false)
   
@@ -83,7 +83,7 @@ function App() {
   }
   
   return (
-    <div className="h-screen flex overflow-hidden">
+    <div className={`h-screen flex overflow-hidden font-${apiConfig.fontFamily || 'default'}`}>
       {/* 侧边栏 */}
       <Sidebar onNewStory={handleNewStory} />
       

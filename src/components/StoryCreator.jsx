@@ -4,7 +4,7 @@ import useStore from '../store/useStore'
 import { generatePictureBook } from '../services/api'
 
 function StoryCreator({ onClose, onOpenSettings }) {
-  const { apiConfig, addStory, setIsGenerating, isGenerating } = useStore()
+  const { apiConfig, updateApiConfig, addStory, setIsGenerating, isGenerating } = useStore()
   const [prompt, setPrompt] = useState('')
   const [progress, setProgress] = useState({ message: '', percent: 0 })
   const [error, setError] = useState('')
@@ -25,6 +25,9 @@ function StoryCreator({ onClose, onOpenSettings }) {
       setError('请告诉我你想听什么故事呀！')
       return
     }
+
+    // 确保使用最新的配置
+    const currentConfig = useStore.getState().apiConfig
     
     // 检查API配置
     if (!apiConfig.textApiKey) {
@@ -38,7 +41,7 @@ function StoryCreator({ onClose, onOpenSettings }) {
     try {
       const story = await generatePictureBook(
         prompt.trim(),
-        apiConfig,
+        currentConfig,
         (message, percent) => {
           setProgress({ message, percent })
         }
@@ -72,9 +75,25 @@ function StoryCreator({ onClose, onOpenSettings }) {
         
         {/* 输入框 */}
         <div className="card-kid p-6 mb-6">
-          <label className="block text-gray-600 mb-2 font-bold">
-            ✨ 我想听一个关于...的故事
-          </label>
+          <div className="flex justify-between items-center mb-2">
+            <label className="text-gray-600 font-bold">
+              ✨ 我想听一个关于...的故事
+            </label>
+            <div className="flex gap-2">
+              <button
+                onClick={() => updateApiConfig({ storyLanguage: 'zh' })}
+                className={`px-3 py-1 rounded-full text-sm transition-all ${apiConfig.storyLanguage === 'zh' ? 'bg-candy-purple text-white' : 'bg-gray-100 text-gray-500 hover:bg-gray-200'}`}
+              >
+                中文
+              </button>
+              <button
+                onClick={() => updateApiConfig({ storyLanguage: 'en' })}
+                className={`px-3 py-1 rounded-full text-sm transition-all ${apiConfig.storyLanguage === 'en' ? 'bg-candy-purple text-white' : 'bg-gray-100 text-gray-500 hover:bg-gray-200'}`}
+              >
+                English
+              </button>
+            </div>
+          </div>
           <textarea
             value={prompt}
             onChange={(e) => setPrompt(e.target.value)}
