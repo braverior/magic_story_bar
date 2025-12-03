@@ -186,7 +186,7 @@ function BookReader({ onClose }) {
         isFullscreen 
           ? 'bg-gradient-to-b from-[#0B1026] via-[#1B2735] to-[#090A0F]' 
           : 'bg-black/80 p-4'
-      }`}
+      }`} 
     >
 
       

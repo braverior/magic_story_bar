@@ -4,6 +4,7 @@ import useStore from './store/useStore'
 import Sidebar from './components/Sidebar'
 import Settings from './components/Settings'
 import BookReader from './components/BookReader'
+import MobileBookReader from './components/MobileBookReader'
 import StoryCreator from './components/StoryCreator'
 import StoryView from './components/StoryView'
 import WelcomeScreen from './components/WelcomeScreen'
@@ -13,6 +14,18 @@ function App() {
   const [view, setView] = useState('welcome') // welcome, create, story
   const [isReading, setIsReading] = useState(false)
   const [isSidebarOpen, setIsSidebarOpen] = useState(false) // 控制侧边栏在移动端的显示
+  const [isMobile, setIsMobile] = useState(false)
+
+  // 检测设备类型
+  useEffect(() => {
+    const checkMobile = () => {
+      setIsMobile(window.innerWidth < 768)
+    }
+    
+    checkMobile()
+    window.addEventListener('resize', checkMobile)
+    return () => window.removeEventListener('resize', checkMobile)
+  }, [])
   
   // 当选中故事时，切换到故事视图
   useEffect(() => {
@@ -148,7 +161,11 @@ function App() {
       
       {/* 绘本阅读器 */}
       {isReading && currentStory && (
-        <BookReader onClose={() => setIsReading(false)} />
+        isMobile ? (
+          <MobileBookReader onClose={() => setIsReading(false)} />
+        ) : (
+          <BookReader onClose={() => setIsReading(false)} />
+        )
       )}
     </div>
   )
