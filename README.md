@@ -6,6 +6,13 @@
 ![Vite](https://img.shields.io/badge/Vite-5.0.0-purple)
 ![TailwindCSS](https://img.shields.io/badge/TailwindCSS-3.3.6-cyan)
 
+## 📸 效果展示
+
+<div align="center">
+  <img src="public/images/sample-1.png" width="45%" alt="故事生成界面" />
+  <img src="public/images/sample-2.png" width="45%" alt="绘本阅读模式" />
+</div>
+
 ## ✨ 功能特性
 
 - 🤖 **AI故事创作** - 输入主题，AI自动生成适合儿童的温馨故事
