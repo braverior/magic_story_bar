@@ -68,17 +68,7 @@ function WelcomeScreen({ onNewStory, onOpenSettings }) {
           </p>
         </div>
         
-        {/* 底部装饰 */}
-        <div className="mt-12">
-          <div className="flex justify-center gap-6 text-4xl">
-            <span className="animate-float" style={{ animationDelay: '0s' }}>🌙</span>
-            <span className="animate-float" style={{ animationDelay: '0.3s' }}>⭐</span>
-            <span className="animate-float" style={{ animationDelay: '0.6s' }}>🦋</span>
-            <span className="animate-float" style={{ animationDelay: '0.9s' }}>🌸</span>
-            <span className="animate-float" style={{ animationDelay: '1.2s' }}>🌈</span>
-            <span className="animate-float" style={{ animationDelay: '1.5s' }}>🎠</span>
-          </div>
-        </div>
+
       </div>
     </div>
   )

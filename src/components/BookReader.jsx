@@ -184,7 +184,7 @@ function BookReader({ onClose }) {
       ref={containerRef}
       className={`fixed inset-0 flex items-center justify-center z-50 transition-all duration-500 ${
         isFullscreen 
-          ? 'bg-gradient-to-br from-indigo-900 via-purple-900 to-pink-900' 
+          ? 'bg-gradient-to-b from-[#0B1026] via-[#1B2735] to-[#090A0F]' 
           : 'bg-black/80 p-4'
       }`}
     >
@@ -193,15 +193,33 @@ function BookReader({ onClose }) {
       {/* 全屏模式下的星空背景 */}
       {isFullscreen && (
         <div className="absolute inset-0 overflow-hidden pointer-events-none">
-          {Array.from({ length: 50 }).map((_, i) => (
+          {/* 普通星星 - 增加数量和随机性 */}
+          {Array.from({ length: 100 }).map((_, i) => (
             <div
-              key={i}
-              className="absolute w-1 h-1 bg-white rounded-full animate-twinkle"
+              key={`star-${i}`}
+              className="absolute bg-white rounded-full animate-twinkle"
               style={{
+                width: Math.random() > 0.8 ? '3px' : '2px',
+                height: Math.random() > 0.8 ? '3px' : '2px',
                 left: `${Math.random() * 100}%`,
                 top: `${Math.random() * 100}%`,
-                animationDelay: `${Math.random() * 3}s`,
-                opacity: Math.random() * 0.5 + 0.3
+                animationDelay: `${Math.random() * 5}s`,
+                opacity: Math.random() * 0.7 + 0.3,
+                boxShadow: Math.random() > 0.9 ? '0 0 4px #fff' : 'none'
+              }}
+            />
+          ))}
+          
+          {/* 流星 - 增加数量和频率，扩大覆盖范围 */}
+          {Array.from({ length: 12 }).map((_, i) => (
+            <div
+              key={`shooting-star-${i}`}
+              className="animate-shooting-star"
+              style={{
+                left: `${Math.random() * 120 - 10}%`, // 覆盖更宽的横向范围 (-10% 到 110%)
+                top: `${Math.random() * 60 - 10}%`, // 覆盖更宽的纵向范围 (-10% 到 50%)
+                animationDelay: `${Math.random() * 15}s`, // 随机延迟
+                animationDuration: `${Math.random() * 1 + 2}s` // 2-3s 持续时间
               }}
             />
           ))}
@@ -295,7 +313,7 @@ function BookReader({ onClose }) {
           {/* 书页 */}
           <div className={`flex-1 book-page p-6 flex flex-col md:flex-row gap-6 ${
             isFullscreen ? 'min-h-[70vh] p-10' : 'min-h-[500px]'
-          }`}>
+          } ${isReading ? 'animate-pulse-soft' : ''}`}>
             {/* 插图 */}
             <div className="md:w-1/2 flex items-center justify-center">
               {page?.image ? (
@@ -320,9 +338,9 @@ function BookReader({ onClose }) {
             
             {/* 文字内容 */}
             <div className="md:w-1/2 flex flex-col justify-center">
-              <div className={`leading-relaxed text-gray-700 ${
-                isReading ? 'animate-pulse-soft' : ''
-              } ${isFullscreen ? 'text-2xl leading-loose' : 'text-lg'}`}>
+              <div className={`flex-1 flex items-center leading-relaxed text-gray-700 ${
+                isFullscreen ? 'text-2xl leading-loose' : 'text-lg'
+              }`}>
                 {page?.text}
               </div>
               

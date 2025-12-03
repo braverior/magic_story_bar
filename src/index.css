@@ -35,6 +35,7 @@
 }
 
 body {
+  font-family: 'ZCOOL KuaiLe', 'Comic Sans MS', 'Chalkboard SE', 'YouYuan', 'HanziPen SC', cursive;
   background: linear-gradient(135deg, #FFF5F5 0%, #F0F8FF 50%, #F5FFFA 100%);
   min-height: 100vh;
   overflow-x: hidden;
@@ -70,7 +71,18 @@ body {
 
 @keyframes twinkle {
   0%, 100% { opacity: 1; transform: scale(1); }
-  50% { opacity: 0.7; transform: scale(1.1); }
+  50% { opacity: 0.2; transform: scale(0.5); }
+}
+
+@keyframes shooting-star {
+  0% {
+    transform: translateX(0) translateY(0) rotate(135deg) scale(1);
+    opacity: 1;
+  }
+  100% {
+    transform: translateX(-500px) translateY(500px) rotate(135deg) scale(1);
+    opacity: 0;
+  }
 }
 
 @keyframes slideIn {
@@ -95,8 +107,8 @@ body {
 }
 
 @keyframes pulse-soft {
-  0%, 100% { transform: scale(1); }
-  50% { transform: scale(1.02); }
+  0%, 100% { transform: scale(1); opacity: 1; }
+  50% { transform: scale(1.01); opacity: 1; }
 }
 
 .animate-pulse-soft {
@@ -113,6 +125,28 @@ body {
   animation: twinkle 2s ease-in-out infinite;
 }
 
+.animate-shooting-star {
+  position: absolute;
+  width: 4px;
+  height: 4px;
+  background: #fff;
+  border-radius: 50%;
+  box-shadow: 0 0 10px #fff, 0 0 20px #fff, 0 0 40px #fff;
+  animation: shooting-star 3s linear infinite;
+  opacity: 0;
+}
+
+.animate-shooting-star::before {
+  content: '';
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  right: 0;
+  width: 100px;
+  height: 2px;
+  background: linear-gradient(90deg, rgba(255,255,255,0), rgba(255,255,255,1));
+}
+
 .animate-slide-in {
   animation: slideIn 0.3s ease-out forwards;
 }
@@ -125,9 +159,7 @@ body {
   animation: bounce-gentle 2s ease-in-out infinite;
 }
 
-.animate-pulse-soft {
-  animation: pulse-soft 2s ease-in-out infinite;
-}
+
 
 /* 气泡背景 */
 .bubble-bg {
