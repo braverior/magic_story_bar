@@ -11,6 +11,7 @@
 - 🤖 **AI故事创作** - 输入主题，AI自动生成适合儿童的温馨故事
 - 🎨 **智能插图生成** - 为每页故事自动生成精美的儿童绘本风格插图
 - 🔊 **语音朗读** - 支持文字转语音，让故事"活"起来
+- 🌍 **多语言支持** - 支持中文和英文故事创作，辅助语言学习
 - 📖 **绘本阅读模式** - 沉浸式翻页阅读体验
 - 💾 **本地存储** - 故事自动保存，随时回顾
 - ⚙️ **灵活配置** - 支持多种AI API配置
@@ -64,6 +65,19 @@ npm run dev
 - **API URL**: API端点地址
 - **模型**: TTS模型（默认：`doubao-tts`）
 - **音色**: 语音音色（默认：`zh_female_qingxin`）
+  - **支持的音色**：
+    - 清新女声 (`zh_female_qingxin`)
+    - 醇厚男声 (`zh_male_chunhou`)
+    - 知性女声 (`zh_female_zhixing`)
+    - 亲切男声 (`zh_male_qinqie`)
+    - 情感女声 (`en_female_emotional`)
+    - 叙事男声 (`en_male_narrative`)
+
+### 配置管理
+
+在设置面板底部，你可以：
+- **导出配置**: 将当前所有API配置导出为JSON文件备份
+- **导入配置**: 从JSON文件恢复配置，方便在不同设备间同步
 
 ### 支持的API服务
 
@@ -77,7 +91,8 @@ npm run dev
 
 1. 点击侧边栏的 **"+ 创建新故事"** 按钮
 2. 在输入框中输入故事主题（如："小兔子找朋友"、"森林里的音乐会"）
-3. 点击 **"开始创作"** 按钮
+3. 选择故事语言（中文/英文）
+4. 点击 **"开始创作"** 按钮
 4. 等待AI生成故事内容和插图（通常需要1-2分钟）
 
 ### 阅读故事
@@ -142,6 +157,34 @@ npm run preview
 ```
 
 构建产物将生成在 `dist/` 目录下，可部署到任何静态托管服务。
+
+### Docker 部署
+
+#### 方式一：从 Docker Hub 安装（推荐）
+
+1. 拉取镜像
+```bash
+docker pull imlele123/magic-story-bar:latest
+```
+
+2. 运行容器
+```bash
+docker run -d -p 80:80 imlele123/magic-story-bar:latest
+```
+
+#### 方式二：本地构建
+
+1. 构建镜像
+```bash
+docker build -t magic-story-bar .
+```
+
+2. 运行容器
+```bash
+docker run -d -p 80:80 magic-story-bar
+```
+
+启动后，访问 `http://localhost` 即可使用。
 
 ## ⚠️ 注意事项
 
