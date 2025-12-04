@@ -1,6 +1,7 @@
 import React, { useState } from 'react'
-import { X, Key, Mic, Image, MessageSquare, Save, Eye, EyeOff, Type, Download, Upload, FileJson, Trash2 } from 'lucide-react'
+import { X, Key, Mic, Image, MessageSquare, Save, Eye, EyeOff, Type, Download, Upload, FileJson, Trash2, Shield, ShieldOff } from 'lucide-react'
 import useStore from '../store/useStore'
+import { encryptData, decryptData } from '../utils/crypto'
 
 function Settings({ onClose }) {
   const { apiConfig, updateApiConfig } = useStore()
@@ -11,6 +12,7 @@ function Settings({ onClose }) {
     ttsAccessKey: false
   })
   const [saved, setSaved] = useState(false)
+  const [isSecureMode, setIsSecureMode] = useState(true)
   
   const handleChange = (field, value) => {
     setConfig(prev => ({ ...prev, [field]: value }))
@@ -26,17 +28,32 @@ function Settings({ onClose }) {
     setShowKeys(prev => ({ ...prev, [field]: !prev[field] }))
   }
 
-  const handleExport = () => {
-    const dataStr = JSON.stringify(config, null, 2)
-    const blob = new Blob([dataStr], { type: 'application/json' })
-    const url = URL.createObjectURL(blob)
-    const a = document.createElement('a')
-    a.href = url
-    a.download = 'magic-story-config.json'
-    document.body.appendChild(a)
-    a.click()
-    document.body.removeChild(a)
-    URL.revokeObjectURL(url)
+  const handleExport = async () => {
+    try {
+      let dataStr
+      let filename
+
+      if (isSecureMode) {
+        dataStr = await encryptData(config)
+        filename = 'magic-story-config.secure.txt'
+      } else {
+        dataStr = JSON.stringify(config, null, 2)
+        filename = 'magic-story-config.json'
+      }
+
+      const blob = new Blob([dataStr], { type: 'text/plain' })
+      const url = URL.createObjectURL(blob)
+      const a = document.createElement('a')
+      a.href = url
+      a.download = filename
+      document.body.appendChild(a)
+      a.click()
+      document.body.removeChild(a)
+      URL.revokeObjectURL(url)
+    } catch (error) {
+      console.error('Export failed:', error)
+      alert('导出失败，请重试')
+    }
   }
 
   const handleImport = (e) => {
@@ -44,11 +61,27 @@ function Settings({ onClose }) {
     if (!file) return
 
     const reader = new FileReader()
-    reader.onload = (event) => {
+    reader.onload = async (event) => {
       try {
-        const importedConfig = JSON.parse(event.target.result)
+        const content = event.target.result
+        let importedConfig
+
+        // 尝试判断是否为加密文件（根据文件名或内容格式）
+        // 这里简单通过是否能解析为 JSON 来判断：
+        // 如果是普通 JSON，直接解析；如果不是，尝试解密
+        try {
+          importedConfig = JSON.parse(content)
+        } catch (jsonError) {
+          // JSON 解析失败，尝试解密
+          try {
+            importedConfig = await decryptData(content)
+          } catch (decryptError) {
+            throw new Error('无法解析文件：既不是有效的 JSON 也无法解密')
+          }
+        }
+
         // 简单的验证
-        if (typeof importedConfig === 'object') {
+        if (importedConfig && typeof importedConfig === 'object') {
           setConfig(prev => ({
             ...prev,
             ...importedConfig
@@ -58,7 +91,8 @@ function Settings({ onClose }) {
           throw new Error('无效的配置文件')
         }
       } catch (err) {
-        alert('导入失败：文件格式不正确')
+        console.error('Import failed:', err)
+        alert('导入失败：' + err.message)
       }
     }
     reader.readAsText(file)
@@ -117,6 +151,17 @@ function Settings({ onClose }) {
         
         {/* 内容 */}
         <div className="p-6 overflow-y-auto max-h-[calc(90vh-180px)]">
+          {/* 隐私提示 */}
+          <div className="mb-6 bg-yellow-50 border border-yellow-200 rounded-2xl p-3 flex items-start gap-3">
+            <Shield className="w-5 h-5 text-yellow-500 flex-shrink-0 mt-0.5" />
+            <div>
+              <h4 className="text-sm font-bold text-yellow-700 mb-1">隐私安全提示</h4>
+              <p className="text-xs text-yellow-600 leading-relaxed">
+                您的任何隐私配置不会被服务器进行记录，只会保存在浏览器本地，请放心使用。
+              </p>
+            </div>
+          </div>
+
           {/* 外观配置 */}
           <div className="mb-6">
             <div className="flex items-center gap-2 mb-3">
@@ -319,24 +364,37 @@ function Settings({ onClose }) {
           
           {/* 配置管理 */}
           <div className="mb-6">
-            <div className="flex items-center gap-2 mb-3">
-              <FileJson className="w-5 h-5 text-gray-600" />
-              <h3 className="font-bold text-gray-700">⚙️ 配置管理</h3>
+            <div className="flex items-center justify-between mb-3">
+              <div className="flex items-center gap-2">
+                <FileJson className="w-5 h-5 text-gray-600" />
+                <h3 className="font-bold text-gray-700">⚙️ 配置管理</h3>
+              </div>
+              
+              {/* 安全模式开关 */}
+              <button
+                onClick={() => setIsSecureMode(!isSecureMode)}
+                className={`flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium transition-colors ${isSecureMode ? 'bg-green-100 text-green-700 border border-green-200' : 'bg-gray-100 text-gray-500 border border-gray-200'}`}
+                title="开启后导出的配置文件将被加密，保护API Key安全"
+              >
+                {isSecureMode ? <Shield className="w-3 h-3" /> : <ShieldOff className="w-3 h-3" />}
+                {isSecureMode ? '安全模式：开启' : '安全模式：关闭'}
+              </button>
             </div>
+            
             <div className="bg-gray-100 rounded-2xl p-4 flex gap-4">
               <button
                 onClick={handleExport}
                 className="flex-1 flex items-center justify-center gap-2 bg-white border-2 border-gray-300 hover:border-candy-blue hover:text-candy-blue text-gray-600 py-2 rounded-xl transition-all"
               >
                 <Download className="w-4 h-4" />
-                导出配置
+                {isSecureMode ? '加密导出' : '普通导出'}
               </button>
               <label className="flex-1 flex items-center justify-center gap-2 bg-white border-2 border-gray-300 hover:border-candy-green hover:text-candy-green text-gray-600 py-2 rounded-xl transition-all cursor-pointer">
                 <Upload className="w-4 h-4" />
                 导入配置
                 <input 
                   type="file" 
-                  accept=".json" 
+                  accept=".json,.txt" 
                   onChange={handleImport} 
                   className="hidden" 
                 />
@@ -359,6 +417,7 @@ function Settings({ onClose }) {
               <li>图片生成API Key可以和文本API Key相同（如果服务商支持）</li>
               <li>语音朗读使用火山引擎大模型语音合成，音质清晰自然</li>
               <li>配置会自动保存在浏览器中，下次打开自动加载</li>
+              <li>开启安全模式导出时，文件会被加密保护，只能在本应用中解密导入</li>
             </ul>
           </div>
         </div>
